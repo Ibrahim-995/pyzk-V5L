@@ -1582,6 +1582,17 @@ class ZK(object):
                     timestamp = self.__decode_time(timestamp)
                     attendances.append(Attendance(user_id, timestamp, status, punch, uid))
                     attendance_data = attendance_data[16:]
+                    
+                elif record_size == 40:
+                    chunk = attendance_data[:40].ljust(40, b'\x00')
+                    uid, raw_user_id, status, timestamp, punch, _ = unpack('<H24sB4sB8s', chunk)
+                    if self.verbose:
+                        print(codecs.encode(chunk, 'hex'))
+
+                    user_id = raw_user_id.split(b'\x00')[0].decode(errors='ignore')
+                    timestamp = self.__decode_time(timestamp)
+                    attendances.append(Attendance(user_id, timestamp, status, punch, uid))
+                    attendance_data = attendance_data[40:]
 
                 elif record_size >= 49:
                     chunk = attendance_data[:49]
